@@ -33,14 +33,14 @@ export function Hero() {
   const { getData, saveData, isEditMode, saveToFile, saveFieldToFile } = useInlineEditor()
   
   // 초기 데이터 - 배열 형태로 변경
-  const defaultSocialLinks = [{"name":"Instagram","icon":"instagram","url":"https://instagram.com/username"},{"name":"YouTube","icon":"youtube","url":"https://youtube.com/@username"}]
+  const defaultSocialLinks = [{"name":"E-mail","icon":"mail","url":"aaaxxx1359@naver.com"}]
   
   const defaultInfo = {
-    greeting: "안녕하세요, 할로할로 방가방가",
+    greeting: "Real Estate & Finance - Portfolio",
     name: "박준형",
     title: "단국대 학생입니다",
     description: "프롭테크 기술로 부동산 시장을 분석합니다.",
-    profileImage: "/uploads/hero-profile-1761477237286.png",
+    profileImage: "/uploads/hero-profile-1764037466702.jpg",
     backgroundImage: "",
     backgroundVideo: "",
     backgroundOpacity: 0.1,
@@ -441,4 +441,4 @@ export function Hero() {
       )}
     </EditableBackground>
   )
-}
+}     

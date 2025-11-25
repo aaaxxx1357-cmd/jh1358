@@ -34,16 +34,16 @@ export function Contact() {
   
   // 기본 데이터
   const defaultInfo = {
-    name: "당신의 이름",
-    title: "직책/직무",
+    name: "박준형",
+    title: "취업준비생",
     company: "",
     experience: "3년 경력",
-    phone: "010-0000-0000",
-    email: "your-email@example.com",
-    website: "",
-    location: "당신의 위치",
+    phone: "010-7629-2269",
+    email: "aaaxxx1359@naver.com",
+    website: "https://jh1358.vercel.app/",
+    location: "경기도 성남시 수정구 태평로 65",
     workTime: "평일 09:00 - 18:00",
-    responseTime: "24시간 이내 응답",
+    responseTime: "1시간 이내 응답",
     sectionTitle: "연락처",
     sectionSubtitle: "프로젝트 문의나 협업 제안을 기다리고 있습니다. 편하신 방법으로 연락주세요!",
     qrTitle: "QR 코드로 연락처 저장",
