@@ -30,8 +30,8 @@ export const defaultConfig = {
     showNavBar: true,
     showThemeToggle: true,
     items: [{"name":"Home","url":"#hero","icon":"Home","show":true},{"name":"About","url":"#about","icon":"User","show":true},{"name":"Projects","url":"#projects","icon":"Briefcase","show":true},{"name":"Contact","url":"#contact","icon":"Mail","show":true},{"name":"갤러리","url":"#gallery","icon":"Camera","show":false},{"name":"블로그","url":"#blog","icon":"Book","show":false}],
-    siteTitle: "Portfolio - Real Estate & Finance",
-    siteDescription: ""
+    siteTitle: "Portfolio - 박준형 Real Estate & Finance",
+    siteDescription: "부동산 금융 전문가로 성장하는 박준형의 포트폴리오입니다."
   }
 
 export function Header() {

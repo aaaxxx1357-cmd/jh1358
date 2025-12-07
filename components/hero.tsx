@@ -1,444 +1,300 @@
 "use client"
 
-import * as React from "react"
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { ArrowDown, Instagram, MessageCircle, Mail, Youtube, Facebook, Twitter, Globe, Linkedin, Settings, X, Plus, Github, Twitch, Send, MessageSquare } from "lucide-react"
-import { EditableText } from "@/components/editable/editable-text"
-import { EditableMedia } from "@/components/editable/editable-media"
-import { EditableBackground } from "@/components/editable/editable-background"
-import { useInlineEditor } from "@/contexts/inline-editor-context"
+import React, { useEffect, useState } from "react"
 
-// 사용 가능한 아이콘 정의
-const AVAILABLE_ICONS = {
-  instagram: Instagram,
-  youtube: Youtube,
-  facebook: Facebook,
-  twitter: Twitter,
-  linkedin: Linkedin,
-  github: Github,
-  discord: MessageSquare,
-  twitch: Twitch,
-  telegram: Send,
-  globe: Globe,
-  message: MessageCircle,
-  mail: Mail,
-  plus: Plus,
-  settings: Settings,
-  x: X,
-  arrowDown: ArrowDown,
+type HeroData = {
+  titleName: string
+  tagline: string
+  description: string
+  email: string
+  github: string
+  location: string
 }
 
+const defaultHeroData: HeroData = {
+  titleName: "박준형",
+  tagline:
+    "PF·NPL·주택금융을 공부하며, 실물 자산과 도시를 함께 보는 부동산 금융 전문가",
+  description:
+    "단국대학교 도시계획부동산학부에서 부동산 금융과 도시·정책·법을 함께 공부하고 있습니다. PF 구조, NPL, 리츠, 주택금융을 통해 ‘부동산을 돈의 흐름과 리스크’의 관점에서 보고, 실제 IM·개발 IM·임장 경험으로 도시와 자산, 금융 구조를 함께 연결하는 연습을 하고 있습니다.",
+  email: "your-email@example.com",
+  github: "github.com/your-github-id",
+  location: "경기 성남시 · 단국대학교 도시계획부동산학부",
+}
+
+const HERO_STORAGE_KEY = "heroData"
+const HERO_IMAGE_KEY = "heroProfileImage"
+
 export function Hero() {
-  const { getData, saveData, isEditMode, saveToFile, saveFieldToFile } = useInlineEditor()
-  
-  // 초기 데이터 - 배열 형태로 변경
-  const defaultSocialLinks = [{"name":"E-mail","icon":"mail","url":"aaaxxx1359@naver.com"}]
-  
-  const defaultInfo = {
-    greeting: "Real Estate & Finance - Portfolio",
-    name: "박준형",
-    title: "단국대 학생입니다",
-    description: "프롭테크 기술로 부동산 시장을 분석합니다.",
-    profileImage: "/uploads/hero-profile-1764037466702.jpg",
-    backgroundImage: "",
-    backgroundVideo: "",
-    backgroundOpacity: 0.1,
-    projectButton: "프로젝트 보기",
-    background: {"image":"","video":"","color":"","opacity":0.1}
-  }
+  const [data, setData] = useState<HeroData>(defaultHeroData)
+  const [editMode, setEditMode] = useState(false)
+  const [profileImage, setProfileImage] = useState<string | null>(null)
 
-  const [backgroundData, setBackgroundData] = useState<{ image: string; video: string; color: string; opacity: number } | null>(null)
-  const [heroInfo, setHeroInfo] = useState(defaultInfo)
-  const [socialLinks, setSocialLinks] = useState(defaultSocialLinks)
-  const [showSocialEditor, setShowSocialEditor] = useState(false)
-  const [showIconPicker, setShowIconPicker] = useState<number | null>(null)
-
-  // localStorage에서 데이터 로드 - 편집 모드가 변경될 때마다 실행
+  // 초기 로드: 텍스트 + 이미지 불러오기
   useEffect(() => {
-    const savedData = getData('hero-info') as typeof defaultInfo | null
-    if (savedData) {
-      setHeroInfo({ ...defaultInfo, ...savedData })
-      // background 데이터가 있으면 설정 (savedData에는 background 필드가 없음)
-    }
-    
-    const savedSocial = getData('hero-social-links') as { name: string; icon: string; url: string }[] | null
-    if (savedSocial) {
-      setSocialLinks(savedSocial)
-    }
-    
-    const savedBg = getData('hero-background') as { image: string; video: string; color: string; opacity: number } | null
-    if (savedBg) {
-      setBackgroundData(savedBg)
-    }
-  }, [isEditMode]) // isEditMode가 변경될 때마다 데이터 다시 로드
+    if (typeof window === "undefined") return
 
-  const updateHeroInfo = (key: string, value: string) => {
-    // 업데이트
-    const newInfo = {
-      ...heroInfo,
-      [key]: value
+    const saved = window.localStorage.getItem(HERO_STORAGE_KEY)
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved) as Partial<HeroData>
+        setData({ ...defaultHeroData, ...parsed })
+      } catch {
+        // ignore
+      }
     }
-    setHeroInfo(newInfo)
-    saveData('hero-info', newInfo)
-  }
-  
-  const addSocialLink = () => {
-    const newLinks = [...socialLinks]
-    newLinks.push({ name: '새 링크', icon: 'globe', url: '' })
-    setSocialLinks(newLinks)
-    saveData('hero-social-links', newLinks)
-  }
-  
-  const updateSocialLink = (index: number, field: 'name' | 'icon' | 'url', value: string) => {
-    const newLinks = [...socialLinks]
-    newLinks[index] = { ...newLinks[index], [field]: value }
-    setSocialLinks(newLinks)
-    saveData('hero-social-links', newLinks)
-  }
-  
-  const removeSocialLink = (index: number) => {
-    const newLinks = socialLinks.filter((_, i) => i !== index)
-    setSocialLinks(newLinks)
-    saveData('hero-social-links', newLinks)
+
+    const savedImg = window.localStorage.getItem(HERO_IMAGE_KEY)
+    if (savedImg) {
+      setProfileImage(savedImg)
+    }
+  }, [])
+
+  const handleChange = (field: keyof HeroData, value: string) => {
+    setData(prev => ({ ...prev, [field]: value }))
   }
 
-  const scrollToAbout = () => {
-    const aboutSection = document.querySelector("#about")
-    if (aboutSection) {
-      aboutSection.scrollIntoView({ behavior: "smooth" })
+  const handleSave = () => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(HERO_STORAGE_KEY, JSON.stringify(data))
+      if (profileImage) {
+        window.localStorage.setItem(HERO_IMAGE_KEY, profileImage)
+      }
     }
+    setEditMode(false)
   }
 
-  const scrollToProjects = () => {
-    const projectsSection = document.querySelector("#projects")
-    if (projectsSection) {
-      projectsSection.scrollIntoView({ behavior: "smooth" })
+  const handleReset = () => {
+    setData(defaultHeroData)
+    setProfileImage(null)
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(HERO_STORAGE_KEY)
+      window.localStorage.removeItem(HERO_IMAGE_KEY)
     }
+    setEditMode(false)
   }
 
+  // 파일 인풋으로 사진 올리기
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
 
-  // 소셜 아이콘 렌더링 함수
-  const renderSocialIcon = (link: { name: string; icon: string; url: string }, index: number) => {
-    const Icon = AVAILABLE_ICONS[link.icon as keyof typeof AVAILABLE_ICONS] || Globe
-    if (!link.url && !isEditMode) return null
-    
-    const isEmail = link.icon === 'mail' || link.url.startsWith('mailto:')
-    const href = isEmail && !link.url.startsWith('mailto:') ? `mailto:${link.url}` : link.url
-    
-    return (
-      <a
-        key={index}
-        href={href || '#'}
-        target={isEmail ? undefined : "_blank"}
-        rel={isEmail ? undefined : "noopener noreferrer"}
-        className="w-10 h-10 rounded-full border border-foreground/20 flex items-center justify-center hover:bg-foreground hover:text-background transition-all hover:scale-110"
-        onClick={!link.url ? (e) => e.preventDefault() : undefined}
-        title={link.name}
-      >
-        <Icon className="h-5 w-5" />
-      </a>
-    )
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        setProfileImage(reader.result)
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem(HERO_IMAGE_KEY, reader.result)
+        }
+      }
+    }
+    reader.readAsDataURL(file)
   }
 
   return (
-    <EditableBackground
-      image={backgroundData?.image || ""}
-      video={backgroundData?.video || ""}
-      color={backgroundData?.color || ""}
-      opacity={backgroundData?.opacity || 0.1}
-      onChange={(data) => {
-        const newData = {
-          image: backgroundData?.image || "",
-          video: backgroundData?.video || "",
-          color: backgroundData?.color || "",
-          opacity: backgroundData?.opacity || 0.1,
-          ...data
-        }
-        setBackgroundData(newData)
-        saveData('hero-background', newData)
-        
-        // heroInfo도 업데이트 (파일 저장을 위해)
-        const updatedHeroInfo = { ...heroInfo, background: newData }
-        setHeroInfo(updatedHeroInfo)
-        saveData('hero-info', updatedHeroInfo)
-      }}
-      storageKey="hero-background"
-      className="min-h-screen flex items-center justify-center relative overflow-hidden"
-    >
-      <section 
-        id="hero" 
-        className="w-full"
-      >
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            {/* 왼쪽: 텍스트 내용 */}
-            <div className="order-2 md:order-1">
-              <h2 className="text-3xl font-bold mb-2">
-                <EditableText
-                  value={heroInfo.greeting}
-                  onChange={(value) => updateHeroInfo('greeting', value)}
-                  storageKey="hero-greeting"
-                />
-              </h2>
-              <h1 className="text-5xl md:text-6xl font-bold mb-4">
-                <EditableText
-                  value={heroInfo.name}
-                  onChange={(value) => updateHeroInfo('name', value)}
-                  storageKey="hero-name"
-                />
-              </h1>
-              <p className="text-2xl mb-4 text-muted-foreground">
-                <EditableText
-                  value={heroInfo.title}
-                  onChange={(value) => updateHeroInfo('title', value)}
-                  storageKey="hero-title"
-                />
-              </p>
-              <p className="text-lg mb-8 text-muted-foreground">
-                <EditableText
-                  value={heroInfo.description}
-                  onChange={(value) => updateHeroInfo('description', value)}
-                  storageKey="hero-description"
-                  multiline
-                />
-              </p>
-
-              {/* 프로젝트 보기 버튼 */}
-              <div className="mb-8">
-                {isEditMode ? (
-                  <div className="flex flex-col gap-2 w-fit">
-                    <input
-                      type="text"
-                      value={heroInfo.projectButton}
-                      onChange={(e) => updateHeroInfo('projectButton', e.target.value)}
-                      placeholder="프로젝트 버튼 텍스트"
-                      className="px-3 py-2 border rounded-lg bg-background text-sm text-center"
-                    />
-                    <Button onClick={scrollToProjects} size="lg" disabled className="justify-center">
-                      {heroInfo.projectButton || "프로젝트 보기"}
-                    </Button>
-                  </div>
-                ) : (
-                  heroInfo.projectButton && (
-                    <Button onClick={scrollToProjects} size="lg" className="justify-center">
-                      {heroInfo.projectButton}
-                    </Button>
-                  )
-                )}
-              </div>
-
-              {/* 소셜 링크 */}
-              <div className="flex gap-4 flex-wrap items-center">
-                {socialLinks.map((link, index) => renderSocialIcon(link, index))}
-                
-                {/* 편집 버튼 */}
-                {isEditMode && (
-                  <button
-                    onClick={() => setShowSocialEditor(true)}
-                    className="w-10 h-10 rounded-full border-2 border-dashed border-foreground/20 flex items-center justify-center hover:border-primary hover:bg-primary/10 transition-all"
-                    title="소셜 링크 편집"
-                  >
-                    <Settings className="h-5 w-5" />
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* 오른쪽: 프로필 이미지 */}
-            <div className="order-1 md:order-2 flex justify-center">
-              <div className="relative">
-                <div className="w-64 h-64 md:w-80 md:h-80 rounded-full bg-muted overflow-hidden shadow-2xl">
-                  <EditableMedia
-                    src={heroInfo.profileImage}
-                    onChange={(src) => updateHeroInfo('profileImage', src)}
-                    type="image"
-                    storageKey="hero-profileImage"
-                    className="w-full h-full object-contain"
-                    alt="프로필"
-                    purpose="hero-profile"
-                  />
-                </div>
-                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/20 to-transparent pointer-events-none" />
-              </div>
-            </div>
-          </div>
+    <section className="relative bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900 text-white py-16 md:py-20 border-b border-slate-800">
+      <div className="max-w-6xl mx-auto px-4 relative">
+        {/* 편집 버튼 */}
+        <div className="absolute right-0 -top-4 flex gap-2 text-xs">
+          {editMode ? (
+            <>
+              <button
+                onClick={handleSave}
+                className="rounded-full bg-slate-100 px-3 py-1 text-slate-900 hover:bg-white"
+              >
+                저장
+              </button>
+              <button
+                onClick={() => setEditMode(false)}
+                className="rounded-full border border-slate-500 px-3 py-1 text-slate-200 hover:bg-slate-900"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleReset}
+                className="rounded-full border border-red-300 px-3 py-1 text-red-300 hover:bg-red-950"
+              >
+                초기화
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setEditMode(true)}
+              className="rounded-full border border-slate-500 px-3 py-1 text-slate-300 hover:bg-slate-900"
+            >
+              편집
+            </button>
+          )}
         </div>
 
-        {/* 스크롤 인디케이터 */}
-        <button
-          onClick={scrollToAbout}
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce"
-        >
-          <ArrowDown className="h-6 w-6 text-muted-foreground" />
-        </button>
-      </section>
-      
-      {/* 소셜 링크 편집 모달 */}
-      {showSocialEditor && isEditMode && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
-          <div className="bg-background border rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">소셜 링크 편집</h3>
-              <button
-                onClick={() => setShowSocialEditor(false)}
-                className="p-1 hover:bg-muted rounded-lg"
-              >
-                <X className="h-5 w-5" />
-              </button>
+        <div className="flex flex-col md:flex-row gap-10 md:gap-12 items-start md:items-stretch">
+          {/* 왼쪽: 소개 텍스트 */}
+          <div className="flex-1 space-y-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-[11px] tracking-[0.24em] uppercase text-slate-300">
+              <span>Real Estate · Finance · Urban</span>
             </div>
-            
+
             <div className="space-y-3">
-              {socialLinks.map((link, index) => {
-                const Icon = AVAILABLE_ICONS[link.icon as keyof typeof AVAILABLE_ICONS] || Globe
-                
-                return (
-                  <div key={index} className="flex items-center gap-3 p-3 border rounded-lg">
-                    {/* 아이콘 미리보기 */}
-                    <div className="w-10 h-10 rounded-full border border-foreground/20 flex items-center justify-center">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    
-                    {/* 플랫폼 이름 입력 */}
-                    <input
-                      type="text"
-                      value={link.name}
-                      onChange={(e) => updateSocialLink(index, 'name', e.target.value)}
-                      placeholder="플랫폼 이름"
-                      className="w-32 px-3 py-2 border rounded-lg bg-background"
-                    />
-                    
-                    {/* 아이콘 선택 버튼 */}
-                    <div className="relative">
-                      <button
-                        onClick={() => setShowIconPicker(showIconPicker === index ? null : index)}
-                        className="px-3 py-2 border rounded-lg bg-background hover:bg-muted flex items-center gap-2"
-                      >
-                        <Icon className="h-4 w-4" />
-                        <span className="text-sm">아이콘 변경</span>
-                      </button>
-                      
-                      {/* 아이콘 선택 드롭다운 */}
-                      {showIconPicker === index && (
-                        <div className="absolute top-full mt-2 left-0 bg-background border rounded-lg shadow-lg p-2 z-50 w-64 max-h-64 overflow-y-auto">
-                          <div className="text-xs font-medium text-muted-foreground mb-2 px-2">소셜 미디어</div>
-                          <div className="grid grid-cols-4 gap-1">
-                            {[
-                              { value: 'instagram', label: 'Instagram' },
-                              { value: 'youtube', label: 'YouTube' },
-                              { value: 'facebook', label: 'Facebook' },
-                              { value: 'twitter', label: 'Twitter' },
-                              { value: 'linkedin', label: 'LinkedIn' },
-                              { value: 'github', label: 'GitHub' },
-                              { value: 'discord', label: 'Discord' },
-                              { value: 'twitch', label: 'Twitch' },
-                              { value: 'telegram', label: 'Telegram' },
-                              { value: 'message', label: '메시지' },
-                              { value: 'mail', label: '이메일' },
-                              { value: 'globe', label: '웹사이트' }
-                            ].map(({ value, label }) => {
-                              const IconOption = AVAILABLE_ICONS[value as keyof typeof AVAILABLE_ICONS]
-                              return (
-                                <button
-                                  key={value}
-                                  onClick={() => {
-                                    updateSocialLink(index, 'icon', value)
-                                    setShowIconPicker(null)
-                                  }}
-                                  className="p-2 hover:bg-muted rounded-lg flex flex-col items-center gap-1 transition-colors"
-                                  title={label}
-                                >
-                                  <IconOption className="h-5 w-5" />
-                                  <span className="text-xs">{label}</span>
-                                </button>
-                              )
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* URL 입력 */}
-                    <input
-                      type="text"
-                      value={link.url}
-                      onChange={(e) => updateSocialLink(index, 'url', e.target.value)}
-                      placeholder="URL 또는 이메일"
-                      className="flex-1 px-3 py-2 border rounded-lg bg-background"
-                    />
-                    
-                    {/* 삭제 버튼 */}
-                    <button
-                      onClick={() => removeSocialLink(index)}
-                      className="p-2 text-destructive hover:bg-destructive/10 rounded-lg"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                )
-              })}
-              
-              <button
-                onClick={addSocialLink}
-                className="w-full py-3 border-2 border-dashed rounded-lg hover:border-primary hover:bg-primary/5 transition-all"
-              >
-                <Plus className="h-4 w-4 inline mr-2" />
-                소셜 링크 추가
-              </button>
+              {editMode ? (
+                <input
+                  className="w-full max-w-xs border border-slate-300 rounded-lg px-3 py-2 text-3xl md:text-4xl font-extrabold text-slate-900"
+                  value={data.titleName}
+                  onChange={e => handleChange("titleName", e.target.value)}
+                />
+              ) : (
+                <h1 className="text-3xl md:text-4xl font-extrabold">
+                  {data.titleName}
+                </h1>
+              )}
+
+              {editMode ? (
+                <textarea
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm md:text-base font-semibold text-slate-700"
+                  rows={2}
+                  value={data.tagline}
+                  onChange={e => handleChange("tagline", e.target.value)}
+                />
+              ) : (
+                <p className="text-sm md:text-base font-semibold text-slate-100">
+                  {data.tagline}
+                </p>
+              )}
             </div>
-            
-            <div className="mt-6 pt-4 border-t">
-              <p className="text-sm text-muted-foreground mb-4">
-                💡 팁: 플랫폼 이름을 입력하고, 아이콘을 선택한 후 URL을 입력하세요. 빈 URL은 표시되지 않습니다.
+
+            <div className="text-xs md:text-sm text-slate-200 leading-relaxed">
+              {editMode ? (
+                <textarea
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs md:text-sm text-slate-800"
+                  rows={4}
+                  value={data.description}
+                  onChange={e => handleChange("description", e.target.value)}
+                />
+              ) : (
+                <p>{data.description}</p>
+              )}
+            </div>
+
+            {/* 연락 정보 */}
+            <div className="mt-4 grid gap-2 text-[11px] text-slate-300 sm:grid-cols-3">
+              <div className="flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                {editMode ? (
+                  <input
+                    className="w-full border border-slate-500 rounded-md px-2 py-1 text-[11px] text-slate-100 bg-slate-900"
+                    value={data.location}
+                    onChange={e => handleChange("location", e.target.value)}
+                  />
+                ) : (
+                  <span>{data.location}</span>
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
+                {editMode ? (
+                  <input
+                    className="w-full border border-slate-500 rounded-md px-2 py-1 text-[11px] text-slate-100 bg-slate-900"
+                    value={data.email}
+                    onChange={e => handleChange("email", e.target.value)}
+                  />
+                ) : (
+                  <span>{data.email}</span>
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-violet-400" />
+                {editMode ? (
+                  <input
+                    className="w-full border border-slate-500 rounded-md px-2 py-1 text-[11px] text-slate-100 bg-slate-900"
+                    value={data.github}
+                    onChange={e => handleChange("github", e.target.value)}
+                  />
+                ) : (
+                  <span>{data.github}</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* 오른쪽: 프로필 카드 (조금 아래로 내려감) */}
+          <div className="flex-1 flex justify-center md:justify-end mt-10 md:mt-20">
+            <div className="w-full max-w-md rounded-3xl border border-slate-700 bg-slate-900/85 px-6 py-6 md:px-8 md:py-7 shadow-xl shadow-emerald-500/25">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-emerald-300">
+                    Real Estate Finance
+                  </p>
+                  <h3 className="mt-1 text-base font-semibold">
+                    PF · NPL · 주택금융
+                  </h3>
+                </div>
+                <span className="rounded-full border border-slate-700 px-2 py-1 text-[11px] text-slate-300">
+                  편집 모드에서 사진 업로드
+                </span>
+              </div>
+
+              <p className="mt-3 text-[11px] text-slate-200 leading-relaxed">
+                실물 IM · 개발 IM · 임장, 그리고 도시·정책·법 과제를 연결해 숫자와
+                공간을 동시에 보는 시각을 만들고 있습니다.
               </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowSocialEditor(false)}
-                  className="flex-1 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80"
-                >
-                  닫기
-                </button>
-                <button
-                  onClick={async () => {
-                    // Hero 컴포넌트의 모든 데이터를 수집
-                    const allData = {
-                      greeting: heroInfo.greeting,
-                      name: heroInfo.name,
-                      title: heroInfo.title,
-                      description: heroInfo.description,
-                      profileImage: heroInfo.profileImage,
-                      backgroundImage: backgroundData?.image || "",
-                      backgroundVideo: backgroundData?.video || "",
-                      backgroundOpacity: backgroundData?.opacity || 0.1,
-                      projectButton: heroInfo.projectButton,
-                    }
-                    
-                    // heroInfo 파일에 저장
-                    const success1 = await saveToFile('hero', 'Info', allData)
-                    
-                    // 소셜 링크도 파일에 저장 (defaultSocialLinks 필드 업데이트)
-                    const success2 = await saveFieldToFile('hero', 'defaultSocialLinks', socialLinks)
-                    
-                    if (success1 && success2) {
-                      // localStorage도 업데이트
-                      saveData('hero-info', heroInfo)
-                      saveData('hero-social-links', socialLinks)
-                      saveData('hero-background', backgroundData)
-                      alert('✅ 파일이 성공적으로 저장되었습니다!\n\n이제 F5를 눌러도 변경사항이 유지됩니다.')
-                      setShowSocialEditor(false)
-                    } else {
-                      alert('❌ 파일 저장에 실패했습니다.')
-                    }
-                  }}
-                  className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium"
-                >
-                  📁 파일에 저장
-                </button>
+
+              {/* 프로필 사진 + 설명 */}
+              <div className="mt-4 flex items-center gap-4">
+                <div className="w-50 h-50 md:w-50 md:h-50 rounded-full overflow-hidden bg-slate-800 flex items-center justify-center text-[11px] text-slate-400">
+                  {profileImage ? (
+                    <img
+                      src={profileImage}
+                      alt="프로필 사진"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span>사진 추가</span>
+                  )}
+                </div>
+                <div className="flex-1 text-[11px] text-slate-300 leading-relaxed">
+                  <p>
+                    PF·NPL·주택금융을 축으로 실물 자산과 도시를 함께 보는
+                    부동산 금융 전문가를 지향합니다.
+                  </p>
+                </div>
+              </div>
+
+              {/* 편집 모드에서만 보이는 사진 업로드 버튼 */}
+              {editMode && (
+                <div className="mt-3">
+                  <label className="inline-flex items-center gap-2 cursor-pointer text-[11px] text-slate-300">
+                    <span className="px-2 py-1 rounded-full border border-slate-500 hover:bg-slate-800">
+                      사진 선택
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageChange}
+                    />
+                    <span className="text-slate-500">JPG/PNG 업로드</span>
+                  </label>
+                </div>
+              )}
+
+              {/* 태그 카드들 */}
+              <div className="mt-5 flex flex-wrap gap-3 text-[11px]">
+                <div className="rounded-2xl bg-slate-800/70 px-3 py-2">
+                  <p className="text-slate-400">트랙</p>
+                  <p className="mt-1 text-slate-100">부동산 금융</p>
+                </div>
+                <div className="rounded-2xl bg-slate-800/70 px-3 py-2">
+                  <p className="text-slate-400">관심</p>
+                  <p className="mt-1 text-slate-100">PF · NPL · 리츠</p>
+                </div>
+                <div className="rounded-2xl bg-slate-800/70 px-3 py-2">
+                  <p className="text-slate-400">강점</p>
+                  <p className="mt-1 text-slate-100">데이터 & 글쓰기</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      )}
-    </EditableBackground>
+      </div>
+    </section>
   )
-}     
+}

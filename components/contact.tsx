@@ -37,14 +37,14 @@ export function Contact() {
     name: "박준형",
     title: "취업준비생",
     company: "",
-    experience: "3년 경력",
+    experience: "학부 졸업 예정",
     phone: "010-7629-2269",
     email: "aaaxxx1359@naver.com",
     website: "https://jh1358.vercel.app/",
     location: "경기도 성남시 수정구 태평로 65",
     workTime: "평일 09:00 - 18:00",
     responseTime: "1시간 이내 응답",
-    sectionTitle: "연락처",
+    sectionTitle: "Contacts",
     sectionSubtitle: "프로젝트 문의나 협업 제안을 기다리고 있습니다. 편하신 방법으로 연락주세요!",
     qrTitle: "QR 코드로 연락처 저장",
     qrSubtitle: "스캔하면 연락처가 자동으로 저장됩니다",
@@ -56,7 +56,18 @@ export function Contact() {
   }
   
   // 소셜 링크 기본값 (배열 형태로 변경)
-  const defaultSocialLinks: { name: string; icon: string; url: string }[] = []
+  const defaultSocialLinks: { name: string; icon: string; url: string }[] = [
+    {
+      "name": "Instagram",
+      "icon": "instagram",
+      "url": "https://www.instagram.com/jh._.1358/"
+    },
+    {
+      "name": "git bash",
+      "icon": "globe",
+      "url": "https://jh1358.vercel.app/"
+    }
+  ]
   
   const [contactInfo, setContactInfo] = useState(defaultInfo)
   const [socialLinks, setSocialLinks] = useState(defaultSocialLinks)

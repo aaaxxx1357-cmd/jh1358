@@ -1,805 +1,381 @@
 "use client"
 
-import * as React from "react"
-import { useState, useEffect } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Briefcase, GraduationCap, Award, Heart, Coffee, Book, Plus, X, Settings, Calendar, Building, User, Trophy, Star, Lightbulb, Target, Rocket, Shield, Sparkles, Code, Database, Palette, Megaphone, BarChart3, LineChart, PieChart, Activity, Brain, Cpu, Layers, Package, Server, Smartphone, Monitor, Wifi, Cloud, Lock, Key, Eye, Search, Filter, Edit, FileText, FolderOpen, GitBranch, Hash, Inbox, Send, MessageSquare, Music, Camera, Video, Mic, Volume2, Headphones, Radio, Zap, Globe, Users, TrendingUp, BookOpen, MapPin, Clock, CheckCircle, AlertCircle, Home, School } from "lucide-react"
-import { EditableText } from "@/components/editable/editable-text"
-import { EditableMedia } from "@/components/editable/editable-media"
-import { EditableBackground } from "@/components/editable/editable-background"
-import { useInlineEditor } from "@/contexts/inline-editor-context"
-import { COMMON_STYLES } from "@/lib/constants"
+import React, { useEffect, useState } from "react"
 
-// 사용 가능한 아이콘들 - 경험 카드용
-const AVAILABLE_ICONS = {
-  briefcase: Briefcase,
-  graduation: GraduationCap,
-  award: Award,
-  trophy: Trophy,
-  star: Star,
-  lightbulb: Lightbulb,
-  target: Target,
-  rocket: Rocket,
-  shield: Shield,
-  building: Building,
-  calendar: Calendar,
-  book: Book,
-  heart: Heart,
-  coffee: Coffee,
-  user: User,
-  zap: Zap,
-  globe: Globe,
-  users: Users,
-  trending: TrendingUp,
-  bookOpen: BookOpen,
-  mapPin: MapPin,
-  clock: Clock,
-  check: CheckCircle,
-  alert: AlertCircle,
-  home: Home,
-  school: School,
+type InsightBook = {
+  id: string
+  title: string
+  subtitle: string
+  summary: string
+  imageData: string | null
 }
 
-// 사용 가능한 아이콘들 - 스킬용
-const SKILL_ICONS = {
-  trophy: Trophy,
-  sparkles: Sparkles,
-  target: Target,
-  rocket: Rocket,
-  star: Star,
-  zap: Zap,
-  lightbulb: Lightbulb,
-  brain: Brain,
-  code: Code,
-  database: Database,
-  palette: Palette,
-  megaphone: Megaphone,
-  barChart: BarChart3,
-  lineChart: LineChart,
-  pieChart: PieChart,
-  activity: Activity,
-  cpu: Cpu,
-  layers: Layers,
-  package: Package,
-  server: Server,
-  smartphone: Smartphone,
-  monitor: Monitor,
-  wifi: Wifi,
-  cloud: Cloud,
-  lock: Lock,
-  key: Key,
-  eye: Eye,
-  search: Search,
-  filter: Filter,
-  edit: Edit,
-  fileText: FileText,
-  folderOpen: FolderOpen,
-  gitBranch: GitBranch,
-  hash: Hash,
-  inbox: Inbox,
-  send: Send,
-  messageSquare: MessageSquare,
-  music: Music,
-  camera: Camera,
-  video: Video,
-  mic: Mic,
-  volume: Volume2,
-  headphones: Headphones,
-  radio: Radio,
-  heart: Heart,
-  shield: Shield,
-  globe: Globe,
-  users: Users,
+type AboutData = {
+  subtitle: string
+  introText: string
+  activitiesText: string
+  strengthsText: string
+  insightText: string
+  insightBooks: InsightBook[]
 }
 
-export function About() {
-  const { getData, saveData, isEditMode, saveToFile } = useInlineEditor()
-  // 기본 데이터
-  const defaultInfo = {
-    title: "소개",
-    subtitle: "당신의 전문성과 열정을 소개해주세요.",
-    background: {"image":"","video":"","color":"","opacity":0.1},
-    experienceCards: [{"icon":"graduation","title":"회사명","period":"2016 - 2020","description":"전공 및 학위"},{"icon":"award","title":"자격증/수상","period":"2021","description":"설명을 입력하세요"}],
-    skills: [{"icon":"code","title":"프론트엔드 개발","description":"React, TypeScript, Next.js를 활용한 모던 웹 개발"},{"icon":"database","title":"백엔드 개발","description":"Node.js, Python, 데이터베이스 설계 및 구현"},{"icon":"palette","title":"UI/UX 디자인","description":"사용자 중심의 인터페이스 디자인"}],
-    storyTitle: "나의 이야기",
-    story: ["저는 기술을 통해 사람들의 삶을 더 편리하고 의미 있게 만드는 일에 열정을 가지고 있습니다.","다양한 프로젝트를 통해 문제 해결 능력과 창의적인 사고를 키워왔으며, 팀원들과의 협업을 통해 함께 성장하는 가치를 배웠습니다.","앞으로도 지속적인 학습과 도전을 통해 더 나은 개발자가 되기 위해 노력하겠습니다.","새로운 문단"],
-    storyImage: "",
-    hobbies: ["📚 독서","☕ 카페 투어","🎨 전시회 관람","✈️ 여행"]
-  }
-  
-  const [aboutInfo, setAboutInfo] = useState(defaultInfo)
-  const [backgroundData, setBackgroundData] = useState(
-    defaultInfo.background
-  )
-  const [showCareerModal, setShowCareerModal] = useState(false)
-  const [showSkillModal, setShowSkillModal] = useState(false)
-  const [showHobbyModal, setShowHobbyModal] = useState(false)
-  
-  // localStorage에서 데이터 로드 - 편집 모드가 변경될 때마다 실행
+const STORAGE_KEY = "aboutData-v3"
+
+const defaultAboutData: AboutData = {
+  subtitle: "부동산 실물과 금융을 함께 이해하는 분석가 지망생입니다.",
+  introText: `저는 부동산 실물과 금융을 함께 이해하는 분석가를 목표로 공부하고 있습니다. 단국대학교 도시계획부동산학부에서 PF·NPL·주택금융, 자산관리, 도시계획·주택정책·공법·사법 과목을 수강하며 공부해 왔습니다.
+
+프로젝트에서는 PF 구조와 NPL, 리츠, 주택금융, 성남 원도심 주택시장, 마케팅·자산관리까지 연결하며 “도시 위의 숫자”를 읽는 연습을 하고 있습니다. 실물 IM·개발 IM·임장 경험을 통해 자산을 현장에서 보고, 도시·정책·법의 틀 안에서 이해한 뒤, 금융 구조로 연결하는 시각을 키워가고 있습니다.`,
+  activitiesText: `· 단국대학교 도시계획부동산학부 재학
+· 부동산학회 URID 활동 (실물 IM·개발 IM·임장)
+· PF·NPL·주택금융 분석 과제 수행
+· 성남 원도심 주택시장·인구구조 분석 리포트 작성`,
+  strengthsText: `· 숫자와 텍스트를 함께 보는 능력
+· 현장·정책·법·금융을 연결하려는 시도
+· 디테일을 끝까지 맞추는 집요함
+· 복잡한 내용을 구조화해 설명하는 힘`,
+  insightText:
+    "“부동산을 한 채의 집이 아니라, 도시·사람·자본이 만나는 구조로 바라보려 합니다.”",
+  insightBooks: [
+    {
+      id: "book-1",
+      title: "도시는 무엇으로 사는가",
+      subtitle: "도시와 사람, 공간의 관계를 다시 보게 해 준 책",
+      summary:
+        "도시가 단순한 배경이 아니라, 사람과 정책, 자본이 끊임없이 상호작용하는 유기체라는 감각을 심어 주었습니다.",
+      imageData: null,
+    },
+    {
+      id: "book-2",
+      title: "더 인간적인 건축",
+      subtitle: "멋진 건물보다 ‘살고 싶은 도시’를 고민하게 만든 책",
+      summary:
+        "반복적인 스카이라인 뒤에 가려진 일상과 보행 경험을 생각하게 하며, 개발이 사람의 삶과 어떻게 만나야 하는지 돌아보게 합니다.",
+      imageData: null,
+    },
+    {
+      id: "book-3",
+      title: "지리의 힘",
+      subtitle: "입지와 구조를 함께 보는 시각",
+      summary:
+        "각 국가와 도시의 입지가 경제·정치·문화에 미치는 영향을 통해, ‘입지’가 부동산 가치의 핵심 축이라는 사실을 다시 확인하게 해 준 책입니다.",
+      imageData: null,
+    },
+  ],
+}
+
+function AboutSection() {
+  const [data, setData] = useState<AboutData>(defaultAboutData)
+  const [editMode, setEditMode] = useState(false)
+
   useEffect(() => {
-    const savedData = getData('about-info') as typeof defaultInfo | null
-    if (savedData) {
-      setAboutInfo({ ...defaultInfo, ...savedData })
-      // background 데이터가 있으면 설정
-      if (savedData.background) {
-        setBackgroundData(savedData.background)
+    if (typeof window === "undefined") return
+    const saved = window.localStorage.getItem(STORAGE_KEY)
+    if (!saved) return
+    try {
+      const parsed = JSON.parse(saved) as AboutData
+      setData({
+        ...defaultAboutData,
+        ...parsed,
+        insightBooks:
+          parsed.insightBooks && parsed.insightBooks.length > 0
+            ? parsed.insightBooks.map((b, idx) => ({
+                ...defaultAboutData.insightBooks[idx],
+                ...b,
+              }))
+            : defaultAboutData.insightBooks,
+      })
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  const handleChange = (field: keyof AboutData, value: string) => {
+    setData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleBookChange = (
+    id: string,
+    field: keyof InsightBook,
+    value: string | null,
+  ) => {
+    setData(prev => ({
+      ...prev,
+      insightBooks: prev.insightBooks.map(book =>
+        book.id === id ? { ...book, [field]: value as any } : book,
+      ),
+    }))
+  }
+
+  const handleImageChange = (
+    id: string,
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        handleBookChange(id, "imageData", reader.result)
       }
     }
-    
-    const savedBg = getData('about-background') as { image: string; video: string; color: string; opacity: number } | null
-    if (savedBg) {
-      setBackgroundData(savedBg)
-    }
-  }, [isEditMode]) // isEditMode가 변경될 때마다 데이터 다시 로드
-  
-  const updateAboutInfo = (key: string, value: string | boolean | typeof aboutInfo.skills | typeof aboutInfo.experienceCards | typeof aboutInfo.story | typeof aboutInfo.hobbies | number) => {
-    const newInfo = { ...aboutInfo, [key]: value }
-    setAboutInfo(newInfo)
-    saveData('about-info', newInfo)
+    reader.readAsDataURL(file)
   }
-  
-  const updateExperienceCard = (index: number, field: string, value: string) => {
-    const newCards = [...aboutInfo.experienceCards]
-    newCards[index] = { ...newCards[index], [field]: value }
-    updateAboutInfo('experienceCards', newCards)
-  }
-  
-  const addExperienceCard = () => {
-    updateAboutInfo('experienceCards', [...aboutInfo.experienceCards, { 
-      icon: "briefcase", 
-      title: "새 경험", 
-      period: "2024", 
-      description: "설명을 입력하세요" 
-    }])
-  }
-  
-  const removeExperienceCard = (index: number) => {
-    updateAboutInfo('experienceCards', aboutInfo.experienceCards.filter((_, i) => i !== index))
-  }
-  
-  const updateSkill = (index: number, field: string, value: string) => {
-    const newSkills = [...aboutInfo.skills]
-    newSkills[index] = { ...newSkills[index], [field]: value }
-    updateAboutInfo('skills', newSkills)
-  }
-  
-  const addSkill = () => {
-    updateAboutInfo('skills', [...aboutInfo.skills, { icon: "star", title: "새 스킬", description: "스킬 설명" }])
-  }
-  
-  const removeSkill = (index: number) => {
-    updateAboutInfo('skills', aboutInfo.skills.filter((_, i) => i !== index))
-  }
-  
-  const updateStory = (index: number, value: string) => {
-    const newStory = [...aboutInfo.story]
-    newStory[index] = value
-    updateAboutInfo('story', newStory)
-  }
-  
-  const addStory = () => {
-    updateAboutInfo('story', [...aboutInfo.story, "새로운 문단"])
-  }
-  
-  const removeStory = (index: number) => {
-    updateAboutInfo('story', aboutInfo.story.filter((_, i) => i !== index))
-  }
-  
-  const updateHobby = (index: number, value: string) => {
-    const newHobbies = [...aboutInfo.hobbies]
-    newHobbies[index] = value
-    updateAboutInfo('hobbies', newHobbies)
-  }
-  
-  const addHobby = () => {
-    updateAboutInfo('hobbies', [...aboutInfo.hobbies, "🎯 새 취미"])
-  }
-  
-  const removeHobby = (index: number) => {
-    updateAboutInfo('hobbies', aboutInfo.hobbies.filter((_, i) => i !== index))
-  }
-  return (
-    <EditableBackground
-      image={backgroundData.image}
-      video={backgroundData.video}
-      color={backgroundData.color}
-      opacity={backgroundData.opacity}
-      onChange={(data) => {
-        const newData = { ...backgroundData, ...data }
-        setBackgroundData(newData)
-        saveData('about-background', newData)
-        
-        // aboutInfo도 업데이트 (파일 저장을 위해)
-        const updatedAboutInfo = { ...aboutInfo, background: newData }
-        setAboutInfo(updatedAboutInfo)
-        saveData('about-info', updatedAboutInfo)
-      }}
-      storageKey="about-background"
-      className="py-20 bg-muted/30 relative"
-    >
-      <section id="about" className="w-full">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          {/* 섹션 제목 */}
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              <EditableText
-                value={aboutInfo.title}
-                onChange={(value) => updateAboutInfo('title', value)}
-                storageKey="about-title"
-              />
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              <EditableText
-                value={aboutInfo.subtitle}
-                onChange={(value) => updateAboutInfo('subtitle', value)}
-                storageKey="about-subtitle"
-                multiline
-              />
-            </p>
-          </div>
 
-          {/* 경험 카드 (경력/학력/자격증 등) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-            {/* 경험 카드들 */}
-            {aboutInfo.experienceCards?.map((card, index) => {
-              const Icon = AVAILABLE_ICONS[card.icon as keyof typeof AVAILABLE_ICONS] || Briefcase
-              return (
-                <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 relative">
-                  <CardContent className="p-6">
-                    {isEditMode && (
-                      <button
-                        onClick={() => removeExperienceCard(index)}
-                        className={COMMON_STYLES.deleteButton}
-                      >
-                        <X className={COMMON_STYLES.deleteIcon} />
-                      </button>
-                    )}
-                    <div className="flex items-start space-x-4">
-                      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Icon className="h-6 w-6 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-foreground mb-1">
-                          <EditableText
-                            value={card.title}
-                            onChange={(value) => updateExperienceCard(index, 'title', value)}
-                            storageKey={`about-experience-${index}-title`}
-                          />
-                        </h3>
-                        <p className="text-sm text-primary mb-2">
-                          <EditableText
-                            value={card.period}
-                            onChange={(value) => updateExperienceCard(index, 'period', value)}
-                            storageKey={`about-experience-${index}-period`}
-                          />
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          <EditableText
-                            value={card.description}
-                            onChange={(value) => updateExperienceCard(index, 'description', value)}
-                            storageKey={`about-experience-${index}-description`}
-                          />
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-            
-            {/* 추가 버튼 */}
-            {isEditMode && (
-              <Card className="border-2 border-dashed border-muted-foreground/30 shadow-none hover:border-primary transition-all cursor-pointer"
-                    onClick={() => setShowCareerModal(true)}>
-                <CardContent className="p-6 flex items-center justify-center">
-                  <div className="text-center">
-                    <Settings className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">경험 카드 편집</p>
-                  </div>
-                </CardContent>
-              </Card>
+  const handleSave = () => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    }
+    setEditMode(false)
+  }
+
+  const handleReset = () => {
+    setData(defaultAboutData)
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(STORAGE_KEY)
+    }
+    setEditMode(false)
+  }
+
+  const activities = data.activitiesText.split("\n").filter(Boolean)
+  const strengths = data.strengthsText.split("\n").filter(Boolean)
+
+  return (
+    <section
+      id="about"
+      className="bg-neutral-950 text-white py-20 border-t border-neutral-800"
+    >
+      <div className="max-w-6xl mx-auto px-4 space-y-16 relative">
+        {/* 편집 버튼 */}
+        <div className="absolute right-0 -top-4 flex gap-2 text-xs">
+          {editMode ? (
+            <>
+              <button
+                onClick={handleSave}
+                className="rounded-full bg-slate-100 px-3 py-1 text-slate-900 hover:bg-white"
+              >
+                저장
+              </button>
+              <button
+                onClick={() => setEditMode(false)}
+                className="rounded-full border border-slate-500 px-3 py-1 text-slate-200 hover:bg-neutral-900"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleReset}
+                className="rounded-full border border-red-300 px-3 py-1 text-red-300 hover:bg-red-950"
+              >
+                초기화
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setEditMode(true)}
+              className="rounded-full border border-slate-500 px-3 py-1 text-slate-300 hover:bg-neutral-900"
+            >
+              편집
+            </button>
+          )}
+        </div>
+
+        {/* About 본문 */}
+        <div className="space-y-6">
+          <h2 className="text-3xl font-bold mb-2">About</h2>
+          {editMode ? (
+            <input
+              className="w-full max-w-xl border border-neutral-700 rounded-lg px-3 py-1 text-sm text-neutral-100 bg-neutral-900"
+              value={data.subtitle}
+              onChange={e => handleChange("subtitle", e.target.value)}
+            />
+          ) : (
+            <p className="text-sm text-neutral-300">{data.subtitle}</p>
+          )}
+
+          <div className="grid gap-8 md:grid-cols-[minmax(0,1.6fr),minmax(0,1.1fr)]">
+            <div>
+              {editMode ? (
+                <textarea
+                  className="w-full min-h-[220px] border border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-100 bg-neutral-900 leading-relaxed"
+                  value={data.introText}
+                  onChange={e => handleChange("introText", e.target.value)}
+                />
+              ) : (
+                <p className="text-sm leading-relaxed text-neutral-200 whitespace-pre-line">
+                  {data.introText}
+                </p>
+              )}
+            </div>
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xs font-semibold tracking-[0.16em] uppercase text-neutral-400 mb-2">
+                  활동
+                </h3>
+                {editMode ? (
+                  <textarea
+                    className="w-full min-h-[120px] border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 bg-neutral-900"
+                    value={data.activitiesText}
+                    onChange={e =>
+                      handleChange("activitiesText", e.target.value)
+                    }
+                  />
+                ) : (
+                  <ul className="space-y-1.5 text-xs text-neutral-200">
+                    {activities.map((line, idx) => (
+                      <li key={idx}>{line.replace(/^·\s*/, "")}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div>
+                <h3 className="text-xs font-semibold tracking-[0.16em] uppercase text-neutral-400 mb-2">
+                  강점
+                </h3>
+                {editMode ? (
+                  <textarea
+                    className="w-full min-h-[120px] border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 bg-neutral-900"
+                    value={data.strengthsText}
+                    onChange={e =>
+                      handleChange("strengthsText", e.target.value)
+                    }
+                  />
+                ) : (
+                  <ul className="space-y-1.5 text-xs text-neutral-200">
+                    {strengths.map((line, idx) => (
+                      <li key={idx}>{line.replace(/^·\s*/, "")}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Insight Books 섹션 */}
+        <div className="space-y-4">
+          <div className="flex flex-col gap-2">
+            <h3 className="text-2xl font-bold">Insight Books</h3>
+            {editMode ? (
+              <textarea
+                className="w-full max-w-xl border border-neutral-700 rounded-lg px-3 py-2 text-xs text-neutral-100 bg-neutral-900"
+                value={data.insightText}
+                onChange={e => handleChange("insightText", e.target.value)}
+              />
+            ) : (
+              <p className="text-sm text-neutral-300">{data.insightText}</p>
             )}
           </div>
 
-          {/* 핵심 역량 */}
-          {(aboutInfo.skills.length > 0 || isEditMode) && (
-            <div className="mb-16">
-              <h3 className="text-2xl font-bold text-foreground mb-8 text-center">
-                핵심 역량
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {aboutInfo.skills.map((skill, index) => {
-                  const Icon = SKILL_ICONS[skill.icon as keyof typeof SKILL_ICONS] || Trophy
-                  return (
-                    <div key={index} className="text-center relative">
-                      {isEditMode && (
-                        <button
-                          onClick={() => removeSkill(index)}
-                          className={COMMON_STYLES.deleteButton}
-                        >
-                          <X className={COMMON_STYLES.deleteIcon} />
-                        </button>
+          <div className="rounded-3xl border border-neutral-800 bg-neutral-950/70 px-6 py-6 md:px-8 md:py-8">
+            <div className="grid gap-6 md:grid-cols-3">
+              {data.insightBooks.map(book => (
+                <article
+                  key={book.id}
+                  className="flex flex-col rounded-3xl border border-neutral-800 bg-black/60 p-5 md:p-6"
+                >
+                  {/* 상단 이미지 / 그라디언트 박스 */}
+                  <div className="mb-4 overflow-hidden rounded-2xl border border-neutral-800 bg-gradient-to-r from-emerald-700/50 via-teal-600/40 to-purple-700/50">
+                    <div className="w-full h-32 md:h-40">
+                      {book.imageData ? (
+                        <img
+                          src={book.imageData}
+                          alt={`${book.title} 이미지`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full" />
                       )}
-                      <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-                        <Icon className="h-8 w-8 text-primary" />
-                      </div>
-                      <h4 className="font-semibold text-foreground mb-2">
-                        <EditableText
-                          value={skill.title}
-                          onChange={(value) => updateSkill(index, 'title', value)}
-                          storageKey={`about-skill-${index}-title`}
-                        />
-                      </h4>
-                      <p className="text-sm text-muted-foreground">
-                        <EditableText
-                          value={skill.description}
-                          onChange={(value) => updateSkill(index, 'description', value)}
-                          storageKey={`about-skill-${index}-description`}
-                          multiline
-                        />
-                      </p>
-                    </div>
-                  )
-                })}
-                {isEditMode && (
-                  <div 
-                    className="text-center border-2 border-dashed border-muted-foreground/30 rounded-lg p-6 flex items-center justify-center cursor-pointer hover:border-primary transition-all"
-                    onClick={() => setShowSkillModal(true)}
-                  >
-                    <div>
-                      <Settings className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">스킬 편집</p>
                     </div>
                   </div>
-                )}
-              </div>
-            </div>
-          )}
 
-          {/* 자기소개 상세 */}
-          {(aboutInfo.story.length > 0 || isEditMode) && (
-            <div className="bg-card rounded-2xl shadow-lg overflow-hidden">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 items-stretch">
-                <div className="p-8">
-                  <h3 className="text-2xl font-bold text-foreground mb-4">
-                    <EditableText
-                      value={aboutInfo.storyTitle}
-                      onChange={(value) => updateAboutInfo('storyTitle', value)}
-                      storageKey="about-storyTitle"
-                    />
-                  </h3>
-                  {aboutInfo.story.map((paragraph, index) => (
-                    <div key={index} className="relative mb-4">
-                      {isEditMode && (
+                  {editMode && (
+                    <div className="mb-3 flex items-center justify-between text-[11px] text-neutral-300">
+                      <label className="inline-flex items-center gap-2 cursor-pointer">
+                        <span className="px-2 py-1 rounded-full border border-neutral-500 hover:bg-neutral-800">
+                          사진 선택
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={e => handleImageChange(book.id, e)}
+                        />
+                      </label>
+                      {book.imageData && (
                         <button
-                          onClick={() => removeStory(index)}
-                          className={COMMON_STYLES.deleteButton}
+                          type="button"
+                          onClick={() =>
+                            handleBookChange(book.id, "imageData", null)
+                          }
+                          className="text-red-300 hover:text-red-200"
                         >
-                          <X className={COMMON_STYLES.deleteIcon} />
+                          사진 삭제
                         </button>
                       )}
-                      <p className="text-muted-foreground leading-relaxed">
-                        <EditableText
-                          value={paragraph}
-                          onChange={(value) => updateStory(index, value)}
-                          storageKey={`about-story-${index}`}
-                          multiline
-                        />
-                      </p>
                     </div>
-                  ))}
-                  {isEditMode && (
-                    <button
-                      onClick={addStory}
-                      className="mt-2 px-4 py-2 border border-dashed border-muted-foreground/30 rounded-lg hover:border-primary transition-all"
-                    >
-                      <Plus className="h-4 w-4 inline mr-2" />
-                      문단 추가
-                    </button>
                   )}
-                </div>
-                
-                {/* 이미지 영역 */}
-                <div className="relative w-full h-full min-h-[500px] lg:min-h-full">
-                  <EditableMedia
-                    src={aboutInfo.storyImage}
-                    onChange={(src) => updateAboutInfo('storyImage', src)}
-                    type="image"
-                    storageKey="about-storyImage"
-                    className="w-full h-full object-cover"
-                    alt="소개 이미지"
-                    purpose="about-image"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
 
-          {/* 취미 & 관심사 */}
-          {(aboutInfo.hobbies.length > 0 || isEditMode) && (
-            <div className="mt-16 text-center">
-              <h3 className="text-2xl font-bold text-foreground mb-8">
-                취미 & 관심사
-              </h3>
-              <div className="flex flex-wrap justify-center gap-3">
-                {aboutInfo.hobbies.map((hobby, index) => (
-                  <span key={index} className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm relative group flex items-center justify-center">
-                    {isEditMode && (
-                      <button
-                        onClick={() => removeHobby(index)}
-                        className={`${COMMON_STYLES.deleteButton} opacity-0 group-hover:opacity-100 transition-opacity`}
-                      >
-                        <X className={COMMON_STYLES.deleteIcon} />
-                      </button>
+                  {/* 텍스트 부분 */}
+                  <div className="mt-1 space-y-2 text-[11px] leading-relaxed">
+                    {editMode ? (
+                      <>
+                        <input
+                          className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-2 py-1 text-[11px] font-semibold text-neutral-50"
+                          value={book.title}
+                          onChange={e =>
+                            handleBookChange(book.id, "title", e.target.value)
+                          }
+                        />
+                        <input
+                          className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-2 py-1 text-[11px] text-emerald-300"
+                          value={book.subtitle}
+                          onChange={e =>
+                            handleBookChange(
+                              book.id,
+                              "subtitle",
+                              e.target.value,
+                            )
+                          }
+                        />
+                        <textarea
+                          className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-2 py-2 text-[11px] text-neutral-200"
+                          rows={4}
+                          value={book.summary}
+                          onChange={e =>
+                            handleBookChange(
+                              book.id,
+                              "summary",
+                              e.target.value,
+                            )
+                          }
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-[11px] font-semibold text-neutral-50">
+                          {book.title}
+                        </p>
+                        <p className="text-[11px] text-emerald-400">
+                          {book.subtitle}
+                        </p>
+                        <p className="mt-2 text-[11px] text-neutral-300">
+                          {book.summary}
+                        </p>
+                      </>
                     )}
-                    <EditableText
-                      value={hobby}
-                      onChange={(value) => updateHobby(index, value)}
-                      storageKey={`about-hobby-${index}`}
-                    />
-                  </span>
-                ))}
-                {isEditMode && (
-                  <button
-                    onClick={() => setShowHobbyModal(true)}
-                    className="px-4 py-2 border border-dashed border-muted-foreground/30 rounded-full text-sm hover:border-primary transition-all"
-                  >
-                    <Settings className="h-4 w-4 inline mr-1" />
-                    편집
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-      
-      {/* 경험 카드 편집 모달 */}
-      {showCareerModal && isEditMode && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
-          <div className="bg-background border rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">경험 카드 편집</h3>
-              <button
-                onClick={() => setShowCareerModal(false)}
-                className="p-1 hover:bg-muted rounded-lg"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            
-            <div className="space-y-3">
-              {aboutInfo.experienceCards?.map((card, index) => {
-                const Icon = AVAILABLE_ICONS[card.icon as keyof typeof AVAILABLE_ICONS] || Briefcase
-                return (
-                  <div key={index} className="flex items-start gap-3 p-3 border rounded-lg bg-muted/30">
-                    {/* 아이콘 선택 */}
-                    <select
-                      value={card.icon}
-                      onChange={(e) => updateExperienceCard(index, 'icon', e.target.value)}
-                      className="w-40 px-2 py-2 border rounded-lg bg-background"
-                    >
-                      <option value="briefcase">💼 직장</option>
-                      <option value="graduation">🎓 학교</option>
-                      <option value="award">🏆 수상</option>
-                      <option value="trophy">🏅 성과</option>
-                      <option value="star">⭐ 우수</option>
-                      <option value="lightbulb">💡 아이디어</option>
-                      <option value="target">🎯 목표</option>
-                      <option value="rocket">🚀 시작</option>
-                      <option value="shield">🛡️ 보안</option>
-                      <option value="building">🏢 회사</option>
-                      <option value="calendar">📅 기간</option>
-                      <option value="book">📚 교육</option>
-                      <option value="heart">❤️ 열정</option>
-                      <option value="coffee">☕ 일상</option>
-                      <option value="user">👤 개인</option>
-                    </select
->
-                    
-                    <div className="flex-1 space-y-2">
-                      <input
-                        type="text"
-                        value={card.title}
-                        onChange={(e) => updateExperienceCard(index, 'title', e.target.value)}
-                        placeholder="예: ABC 회사, 서울대학교, 구글 자격증"
-                        className="w-full px-3 py-2 border rounded-lg bg-background font-semibold"
-                      />
-                      
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={card.period}
-                          onChange={(e) => updateExperienceCard(index, 'period', e.target.value)}
-                          placeholder="예: 2020 - 현재"
-                          className="flex-1 px-3 py-2 border rounded-lg bg-background"
-                        />
-                        
-                        <input
-                          type="text"
-                          value={card.description}
-                          onChange={(e) => updateExperienceCard(index, 'description', e.target.value)}
-                          placeholder="예: 마케팅 매니저, 경영학 학사, GAIQ 인증"
-                          className="flex-1 px-3 py-2 border rounded-lg bg-background"
-                        />
-                      </div>
-                    </div>
-                    
-                    <button
-                      onClick={() => removeExperienceCard(index)}
-                      className="p-2 text-destructive hover:bg-destructive/10 rounded-lg"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
                   </div>
-                )
-              })}
-              
-              <button
-                onClick={addExperienceCard}
-                className="w-full py-3 border-2 border-dashed rounded-lg hover:border-primary hover:bg-primary/5 transition-all"
-              >
-                <Plus className="h-4 w-4 inline mr-2" />
-                카드 추가
-              </button>
-            </div>
-            
-            <div className="mt-6 pt-4 border-t">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowCareerModal(false)}
-                  className="flex-1 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80"
-                >
-                  닫기
-                </button>
-                <button
-                  onClick={async () => {
-                    const success = await saveToFile('about', 'Info', aboutInfo)
-                    if (success) {
-                      alert('✅ 소개 설정이 파일에 저장되었습니다!')
-                      setShowCareerModal(false)
-                    } else {
-                      alert('❌ 파일 저장에 실패했습니다.')
-                    }
-                  }}
-                  className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium"
-                >
-                  📁 파일에 저장
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {/* 스킬 편집 모달 */}
-      {showSkillModal && isEditMode && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[2147483647]">
-          <div className="bg-background border rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">핵심 역량 편집</h3>
-              <button
-                onClick={() => setShowSkillModal(false)}
-                className="p-1 hover:bg-muted rounded-lg"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            
-            <div className="space-y-3">
-              {aboutInfo.skills.map((skill, index) => {
-                const Icon = SKILL_ICONS[skill.icon as keyof typeof SKILL_ICONS] || Trophy
-                return (
-                  <div key={index} className="flex items-start gap-3 p-3 border rounded-lg bg-muted/30">
-                    {/* 아이콘 선택 */}
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Icon className="h-6 w-6 text-primary" />
-                      </div>
-                      <select
-                        value={skill.icon}
-                        onChange={(e) => updateSkill(index, 'icon', e.target.value)}
-                        className="w-32 px-2 py-1 text-xs border rounded-lg bg-background"
-                      >
-                        <optgroup label="기술 스킬">
-                          <option value="code">💻 코드/개발</option>
-                          <option value="database">🗜️ 데이터베이스</option>
-                          <option value="server">🌐 서버/클라우드</option>
-                          <option value="smartphone">📱 모바일</option>
-                          <option value="monitor">🖥️ 프론트엔드</option>
-                          <option value="cpu">🤖 AI/ML</option>
-                          <option value="gitBranch">🌿 Git/버전관리</option>
-                          <option value="lock">🔒 보안</option>
-                        </optgroup>
-                        <optgroup label="비즈니스">
-                          <option value="barChart">📊 데이터 분석</option>
-                          <option value="lineChart">📈 성과 분석</option>
-                          <option value="pieChart">🥧 통계/시각화</option>
-                          <option value="megaphone">📢 마케팅</option>
-                          <option value="target">🎯 전략/기획</option>
-                          <option value="users">👥 팀워크</option>
-                        </optgroup>
-                        <optgroup label="창의적 스킬">
-                          <option value="palette">🎨 디자인</option>
-                          <option value="camera">📷 사진/영상</option>
-                          <option value="music">🎵 음악/오디오</option>
-                          <option value="edit">✏️ 글쓰기/편집</option>
-                          <option value="video">🎬 영상 제작</option>
-                        </optgroup>
-                        <optgroup label="일반 역량">
-                          <option value="trophy">🏆 리더십</option>
-                          <option value="sparkles">✨ 혁신</option>
-                          <option value="rocket">🚀 실행력</option>
-                          <option value="brain">🧠 분석력</option>
-                          <option value="lightbulb">💡 창의력</option>
-                          <option value="zap">⚡ 속도/효율</option>
-                          <option value="star">⭐ 전문성</option>
-                          <option value="heart">❤️ 열정</option>
-                          <option value="shield">🛡️ 신뢰성</option>
-                          <option value="globe">🌍 글로벌</option>
-                        </optgroup>
-                      </select>
-                    </div>
-                    
-                    <div className="flex-1 space-y-2">
-                      <input
-                        type="text"
-                        value={skill.title}
-                        onChange={(e) => updateSkill(index, 'title', e.target.value)}
-                        placeholder="예: 프론트엔드 개발, 데이터 분석, 프로젝트 관리"
-                        className="w-full px-3 py-2 border rounded-lg bg-background font-semibold"
-                      />
-                      
-                      <textarea
-                        value={skill.description}
-                        onChange={(e) => updateSkill(index, 'description', e.target.value)}
-                        placeholder="예: React와 TypeScript를 활용한 모던 웹 애플리케이션 개발"
-                        className="w-full px-3 py-2 border rounded-lg bg-background resize-none"
-                        rows={2}
-                      />
-                    </div>
-                    
-                    <button
-                      onClick={() => removeSkill(index)}
-                      className="p-2 text-destructive hover:bg-destructive/10 rounded-lg"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                )
-              })}
-              
-              <button
-                onClick={addSkill}
-                className="w-full py-3 border-2 border-dashed rounded-lg hover:border-primary hover:bg-primary/5 transition-all"
-              >
-                <Plus className="h-4 w-4 inline mr-2" />
-                스킬 추가
-              </button>
-            </div>
-            
-            <div className="mt-6 pt-4 border-t">
-              <p className="text-sm text-muted-foreground mb-4">
-                💡 팁: 아이콘을 선택하고 제목과 설명을 입력하세요. 필요한 만큼 자유롭게 추가할 수 있습니다.
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowSkillModal(false)}
-                  className="flex-1 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80"
-                >
-                  닫기
-                </button>
-                <button
-                  onClick={async () => {
-                    const success = await saveToFile('about', 'Info', aboutInfo)
-                    if (success) {
-                      alert('✅ 소개 설정이 파일에 저장되었습니다!')
-                      setShowSkillModal(false)
-                    } else {
-                      alert('❌ 파일 저장에 실패했습니다.')
-                    }
-                  }}
-                  className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium"
-                >
-                  📁 파일에 저장
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {/* 취미 편집 모달 */}
-      {showHobbyModal && isEditMode && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[2147483647]">
-          <div className="bg-background border rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">취미 & 관심사 편집</h3>
-              <button
-                onClick={() => setShowHobbyModal(false)}
-                className="p-1 hover:bg-muted rounded-lg"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            
-            <div className="space-y-3">
-              {aboutInfo.hobbies.map((hobby, index) => (
-                <div key={index} className="flex items-center gap-3 p-3 border rounded-lg">
-                  <input
-                    type="text"
-                    value={hobby}
-                    onChange={(e) => updateHobby(index, e.target.value)}
-                    placeholder="예: 📚 독서"
-                    className="flex-1 px-3 py-2 border rounded-lg bg-background"
-                  />
-                  
-                  <button
-                    onClick={() => removeHobby(index)}
-                    className="p-2 text-destructive hover:bg-destructive/10 rounded-lg"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
+                </article>
               ))}
-              
-              <button
-                onClick={addHobby}
-                className="w-full py-3 border-2 border-dashed rounded-lg hover:border-primary hover:bg-primary/5 transition-all"
-              >
-                <Plus className="h-4 w-4 inline mr-2" />
-                취미 추가
-              </button>
-            </div>
-            
-            <div className="mt-6 pt-4 border-t">
-              <div className="mb-4">
-                <p className="text-sm font-medium mb-2">🎯 취미 예시:</p>
-                <div className="flex flex-wrap gap-2">
-                  {['📚 독서', '☕ 카페 투어', '🎨 전시회 관람', '✈️ 여행', '🏃 러닝', '📸 사진', '🎮 게임', '🎬 영화 감상', '🎵 음악 감상', '🍳 요리', '🌱 가드닝', '🏊 수영', '🧘 요가', '🎸 기타 연주', '✍️ 글쓰기', '🏕️ 캠핑', '🎭 연극 관람', '🎪 공연 관람', '🚴 자전거', '⛷️ 스키'].map((example) => (
-                    <button
-                      key={example}
-                      className="px-3 py-1 text-sm bg-muted hover:bg-primary/10 rounded-full transition-all"
-                      onClick={() => {
-                        if (!aboutInfo.hobbies.includes(example)) {
-                          updateAboutInfo('hobbies', [...aboutInfo.hobbies, example])
-                        }
-                      }}
-                    >
-                      {example}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground mb-4">
-                💡 팁: 이모지와 함께 취미를 입력하세요. 예시를 클릭하면 새 취미가 추가됩니다.
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowHobbyModal(false)}
-                  className="flex-1 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80"
-                >
-                  닫기
-                </button>
-                <button
-                  onClick={async () => {
-                    const success = await saveToFile('about', 'Info', aboutInfo)
-                    if (success) {
-                      alert('✅ 소개 설정이 파일에 저장되었습니다!')
-                      setShowHobbyModal(false)
-                    } else {
-                      alert('❌ 파일 저장에 실패했습니다.')
-                    }
-                  }}
-                  className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium"
-                >
-                  📁 파일에 저장
-                </button>
-              </div>
             </div>
           </div>
         </div>
-      )}
-    </EditableBackground>
+      </div>
+    </section>
   )
+}
+
+export default AboutSection
+
+export function About() {
+  return <AboutSection />
 }
