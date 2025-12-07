@@ -14,10 +14,10 @@ type HeroData = {
 const defaultHeroData: HeroData = {
   titleName: "박준형",
   tagline:
-    "PF·NPL·주택금융을 공부하며, 실물 자산과 도시를 함께 보는 부동산 금융 전문가",
+    "PF·NPL·주택금융을 공부하며, 실물 자산과 도시를 함께 보는 부동산 금융 전문가입니다.",
   description:
-    "단국대학교 도시계획부동산학부에서 부동산 금융과 도시·정책·법을 함께 공부하고 있습니다. PF 구조, NPL, 리츠, 주택금융을 통해 ‘부동산을 돈의 흐름과 리스크’의 관점에서 보고, 실제 IM·개발 IM·임장 경험으로 도시와 자산, 금융 구조를 함께 연결하는 연습을 하고 있습니다.",
-  email: "your-email@example.com",
+    "자산운용사 입사를 목표하는 주니어입니다. 누구보다 열의있게 프로젝트에 임합니다. 안 되면 되게 하고 하면 더 잘되게 합니다. 입사하여 바로 딜을 맡아 해낼 자신이 있습니다. 저를 믿고 뽑아주십시오!",
+  email: "aaaxxx1359@naver.com",
   github: "github.com/your-github-id",
   location: "경기 성남시 · 단국대학교 도시계획부동산학부",
 }
@@ -94,38 +94,8 @@ export function Hero() {
   return (
     <section className="relative bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900 text-white py-16 md:py-20 border-b border-slate-800">
       <div className="max-w-6xl mx-auto px-4 relative">
-        {/* 편집 버튼 */}
-        <div className="absolute right-0 -top-4 flex gap-2 text-xs">
-          {editMode ? (
-            <>
-              <button
-                onClick={handleSave}
-                className="rounded-full bg-slate-100 px-3 py-1 text-slate-900 hover:bg-white"
-              >
-                저장
-              </button>
-              <button
-                onClick={() => setEditMode(false)}
-                className="rounded-full border border-slate-500 px-3 py-1 text-slate-200 hover:bg-slate-900"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleReset}
-                className="rounded-full border border-red-300 px-3 py-1 text-red-300 hover:bg-red-950"
-              >
-                초기화
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => setEditMode(true)}
-              className="rounded-full border border-slate-500 px-3 py-1 text-slate-300 hover:bg-slate-900"
-            >
-              편집
-            </button>
-          )}
-        </div>
+        
+        
 
         <div className="flex flex-col md:flex-row gap-10 md:gap-12 items-start md:items-stretch">
           {/* 왼쪽: 소개 텍스트 */}
@@ -242,7 +212,7 @@ export function Hero() {
                 <div className="w-50 h-50 md:w-50 md:h-50 rounded-full overflow-hidden bg-slate-800 flex items-center justify-center text-[11px] text-slate-400">
                   {profileImage ? (
                     <img
-                      src={profileImage}
+                      src="/profile.jpg"
                       alt="프로필 사진"
                       className="w-full h-full object-cover"
                     />
