@@ -620,38 +620,8 @@ export function Projects() {
       className="bg-neutral-900 text-white py-20 border-t border-neutral-800"
     >
       <div className="max-w-6xl mx-auto px-4 space-y-10 relative">
-        {/* 편집 버튼 */}
-        <div className="absolute right-0 -top-4 flex gap-2 text-xs">
-          {editMode ? (
-            <>
-              <button
-                onClick={handleSave}
-                className="rounded-full bg-slate-100 px-3 py-1 text-slate-900 hover:bg-white"
-              >
-                저장
-              </button>
-              <button
-                onClick={() => setEditMode(false)}
-                className="rounded-full border border-slate-500 px-3 py-1 text-slate-200 hover:bg-neutral-900"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleReset}
-                className="rounded-full border border-red-300 px-3 py-1 text-red-300 hover:bg-red-950"
-              >
-                초기화
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => setEditMode(true)}
-              className="rounded-full border border-slate-500 px-3 py-1 text-slate-300 hover:bg-neutral-900"
-            >
-              편집
-            </button>
-          )}
-        </div>
+        
+        
 
         {/* 상단 인트로 */}
         <header className="space-y-2">
