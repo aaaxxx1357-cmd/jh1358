@@ -109,38 +109,8 @@ export function ProfileCard() {
   return (
     <section className="bg-neutral-950 py-20 text-neutral-900">
       <div className="max-w-5xl mx-auto px-4 relative">
-        {/* 편집 버튼 */}
-        <div className="absolute right-0 -top-4 flex gap-2 text-xs">
-          {editMode ? (
-            <>
-              <button
-                onClick={handleSave}
-                className="rounded-full bg-neutral-900 px-3 py-1 text-white border border-neutral-300 hover:bg-neutral-800"
-              >
-                저장
-              </button>
-              <button
-                onClick={() => setEditMode(false)}
-                className="rounded-full border border-neutral-400 px-3 py-1 text-neutral-200 hover:bg-neutral-900"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleReset}
-                className="rounded-full border border-red-300 px-3 py-1 text-red-300 hover:bg-red-900"
-              >
-                초기화
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => setEditMode(true)}
-              className="rounded-full border border-neutral-500 px-3 py-1 text-neutral-200 hover:bg-neutral-900"
-            >
-              편집
-            </button>
-          )}
-        </div>
+        
+        
 
         {/* 제목(원하면 숨겨도 됨) */}
         <h2 className="text-xl font-semibold text-white">Profile</h2>
